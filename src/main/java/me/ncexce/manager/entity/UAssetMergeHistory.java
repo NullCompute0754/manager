@@ -1,32 +1,32 @@
 package me.ncexce.manager.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "uasset_merge_history")
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class UAssetMergeHistory {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "source_version_id")
-    private UAssetVersion sourceVersion;
+    @JoinColumn(name = "source_commit_id")
+    private UAssetCommit sourceCommit;
 
     @ManyToOne
-    @JoinColumn(name = "target_version_id")
-    private UAssetVersion targetVersion;
+    @JoinColumn(name = "target_commit_id")
+    private UAssetCommit targetCommit;
 
     @ManyToOne
-    @JoinColumn(name = "result_version_id")
-    private UAssetVersion resultVersion;
+    @JoinColumn(name = "result_commit_id")
+    private UAssetCommit resultCommit;
 
     private LocalDateTime mergedAt;
 }

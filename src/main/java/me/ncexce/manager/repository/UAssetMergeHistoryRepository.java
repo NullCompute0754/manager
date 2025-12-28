@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface UAssetMergeHistoryRepository extends JpaRepository<UAssetMergeHistory, Long> {
-    List<UAssetMergeHistory> findByTargetVersionId(Long versionId);
-    List<UAssetMergeHistory> findBySourceVersionId(Long versionId);
+    List<UAssetMergeHistory> findByTargetCommitId(Long commitId);
+    List<UAssetMergeHistory> findBySourceCommitId(Long commitId);
 }

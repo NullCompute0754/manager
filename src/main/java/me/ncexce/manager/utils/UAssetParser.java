@@ -27,7 +27,7 @@ public class UAssetParser {
             int legacyUE3Version = metadata.legacyUE3Version;
             int fileVersionUE4 = metadata.fileVersionUE4;
             int fileVersionUE5 = metadata.fileVersionUE5;
-            int licenceeVersion = metadata.licenceeVersion;
+            int licenseeVersion = metadata.licenseeVersion;
 
             // Hashing
             String masterUUID = metadata.hashing.masterUUID;
@@ -59,7 +59,7 @@ public class UAssetParser {
                     legacyUE3Version,
                     fileVersionUE4,
                     fileVersionUE5,
-                    licenceeVersion,
+                    licenseeVersion,
                     hashing,
                     assetLocation,
                     nameCount,
@@ -87,7 +87,7 @@ public class UAssetParser {
         metadata.legacyUE3Version = readInt(raf, endian);
         metadata.fileVersionUE4 = readInt(raf, endian);
         metadata.fileVersionUE5 = readInt(raf, endian);
-        metadata.licenceeVersion = readInt(raf, endian);
+        metadata.licenseeVersion = readInt(raf, endian);
 
         metadata.hashing.masterUUID=readFString(raf, endian);
         metadata.hashing.auxByte1 = readInt(raf, endian);
@@ -155,7 +155,7 @@ public class UAssetParser {
         int legacyUE3Version;
         int fileVersionUE4;
         int fileVersionUE5;
-        int licenceeVersion;
+        int licenseeVersion;
 
         HashingStructure hashing;
 
