@@ -28,5 +28,9 @@ public class UAssetMergeHistory {
     @JoinColumn(name = "result_commit_id")
     private UAssetCommit resultCommit;
 
+    @ManyToOne
+    @JoinColumn(name = "merged_by") // 关联执行合并的管理员ID
+    private UserEntity mergedBy;
+
     private LocalDateTime mergedAt;
 }

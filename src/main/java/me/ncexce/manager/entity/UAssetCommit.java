@@ -37,6 +37,9 @@ public class UAssetCommit {
 
     private String message; // commit 描述
 
+    @Column(name = "commit_path") // 数据库字段名，可自定义
+    private String commitPath;
+
     @OneToMany(mappedBy = "commit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UAssetFileCommit> files;
 }
