@@ -22,7 +22,6 @@ public class MergeService {
     private final UAssetCommitRepository commitRepository;
     private final UAssetMergeHistoryRepository mergeHistoryRepository;
     private final UserRepository userRepository;
-    private final UAssetService uAssetService;
 
     /**
      * 合并用户分支到master分支
@@ -47,7 +46,7 @@ public class MergeService {
                 .orElseThrow(() -> new RuntimeException("管理员用户不存在"));
 
         // 创建合并结果commit
-        UAssetCommit mergeResult = createMergeCommit(project, masterCommit, userCommit, mergedBy, mergeMessage);
+        UAssetCommit mergeResult = createMergeCommit(project, masterCommit, userCommit, mergeMessage);
 
         // 保存合并历史
         saveMergeHistory(masterCommit, userCommit, mergeResult, mergedBy);
@@ -91,7 +90,7 @@ public class MergeService {
      * 创建合并commit
      */
     private UAssetCommit createMergeCommit(UAssetProject project, UAssetCommit masterCommit, 
-                                         UAssetCommit userCommit, UserEntity mergedBy, String message) {
+                                         UAssetCommit userCommit, String message) {
         UAssetCommit mergeCommit = new UAssetCommit();
         mergeCommit.setProject(project);
         mergeCommit.setParentCommit(masterCommit);
@@ -226,21 +225,23 @@ public class MergeService {
         Map<String, UAssetFileCommit> userFiles = getFileMap(userCommit);
 
         // 检查新增的文件
-        for (String fileName : userFiles.keySet()) {
+        for (Map.Entry<String, UAssetFileCommit> entry : userFiles.entrySet()) {
+            String fileName = entry.getKey();
             if (!masterFiles.containsKey(fileName)) {
                 Map<String, Object> diff = new HashMap<>();
                 diff.put("fileName", fileName);
                 diff.put("status", "ADDED");
-                diff.put("userFile", userFiles.get(fileName));
+                diff.put("userFile", entry.getValue());
                 diffs.add(diff);
             }
         }
 
         // 检查修改的文件
-        for (String fileName : userFiles.keySet()) {
+        for (Map.Entry<String, UAssetFileCommit> entry : userFiles.entrySet()) {
+            String fileName = entry.getKey();
             if (masterFiles.containsKey(fileName)) {
                 UAssetFileCommit masterFile = masterFiles.get(fileName);
-                UAssetFileCommit userFile = userFiles.get(fileName);
+                UAssetFileCommit userFile = entry.getValue();
                 
                 if (!isFileContentEqual(masterFile, userFile)) {
                     Map<String, Object> diff = new HashMap<>();
@@ -254,12 +255,13 @@ public class MergeService {
         }
 
         // 检查删除的文件
-        for (String fileName : masterFiles.keySet()) {
+        for (Map.Entry<String, UAssetFileCommit> entry : masterFiles.entrySet()) {
+            String fileName = entry.getKey();
             if (!userFiles.containsKey(fileName)) {
                 Map<String, Object> diff = new HashMap<>();
                 diff.put("fileName", fileName);
                 diff.put("status", "DELETED");
-                diff.put("masterFile", masterFiles.get(fileName));
+                diff.put("masterFile", entry.getValue());
                 diffs.add(diff);
             }
         }
@@ -284,8 +286,8 @@ public class MergeService {
         Map<String, UAssetFileCommit> userFiles = getFileMap(userCommit);
         
         int count = 0;
-        for (String fileName : userFiles.keySet()) {
-            if (!masterFiles.containsKey(fileName)) {
+        for (Map.Entry<String, UAssetFileCommit> entry : userFiles.entrySet()) {
+            if (!masterFiles.containsKey(entry.getKey())) {
                 count++;
             }
         }
@@ -300,9 +302,9 @@ public class MergeService {
         Map<String, UAssetFileCommit> userFiles = getFileMap(userCommit);
         
         int count = 0;
-        for (String fileName : userFiles.keySet()) {
-            if (masterFiles.containsKey(fileName) && 
-                !isFileContentEqual(masterFiles.get(fileName), userFiles.get(fileName))) {
+        for (Map.Entry<String, UAssetFileCommit> entry : userFiles.entrySet()) {
+            if (masterFiles.containsKey(entry.getKey()) && 
+                !isFileContentEqual(masterFiles.get(entry.getKey()), entry.getValue())) {
                 count++;
             }
         }
@@ -317,8 +319,8 @@ public class MergeService {
         Map<String, UAssetFileCommit> userFiles = getFileMap(userCommit);
         
         int count = 0;
-        for (String fileName : masterFiles.keySet()) {
-            if (!userFiles.containsKey(fileName)) {
+        for (Map.Entry<String, UAssetFileCommit> entry : masterFiles.entrySet()) {
+            if (!userFiles.containsKey(entry.getKey())) {
                 count++;
             }
         }

@@ -3,7 +3,6 @@ package me.ncexce.manager.service;
 import lombok.RequiredArgsConstructor;
 import me.ncexce.manager.entity.UAssetProject;
 import me.ncexce.manager.entity.UAssetCommit;
-import me.ncexce.manager.entity.UserEntity;
 import me.ncexce.manager.exceptions.ProjectNotFoundException;
 import me.ncexce.manager.repository.UAssetProjectRepository;
 import me.ncexce.manager.repository.UAssetCommitRepository;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +24,7 @@ public class ProjectService {
      * 创建新项目
      */
     public UAssetProject createProject(String name, String description, Long createdByUserId) {
-        UserEntity createdBy = userRepository.findById(createdByUserId)
+        userRepository.findById(createdByUserId)
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
 
         UAssetProject project = new UAssetProject();
@@ -36,7 +34,7 @@ public class ProjectService {
         UAssetProject savedProject = projectRepository.save(project);
 
         // 创建初始的master commit
-        createInitialMasterCommit(savedProject, createdBy);
+        createInitialMasterCommit(savedProject);
 
         return savedProject;
     }
@@ -69,7 +67,7 @@ public class ProjectService {
     /**
      * 创建初始的master commit
      */
-    private void createInitialMasterCommit(UAssetProject project, UserEntity createdBy) {
+    private void createInitialMasterCommit(UAssetProject project) {
         UAssetCommit initialCommit = new UAssetCommit();
         initialCommit.setProject(project);
         initialCommit.setBranch("master");
