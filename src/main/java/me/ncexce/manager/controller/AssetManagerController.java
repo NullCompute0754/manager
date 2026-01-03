@@ -2,8 +2,6 @@ package me.ncexce.manager.controller;
 
 import lombok.RequiredArgsConstructor;
 import me.ncexce.manager.entity.UAssetFileCommit;
-import me.ncexce.manager.entity.UAssetHashEntryCommit;
-import me.ncexce.manager.entity.UAssetNameCommit;
 import me.ncexce.manager.service.UAssetService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/asset-manager")
@@ -60,7 +57,7 @@ public class AssetManagerController {
             
             fileInfo.put("metadata", metadata);
             return fileInfo;
-        }).collect(Collectors.toList());
+        }).toList();
         
         return ResponseEntity.ok(fileList);
     }

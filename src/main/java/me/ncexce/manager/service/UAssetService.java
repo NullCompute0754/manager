@@ -5,7 +5,6 @@ import me.ncexce.manager.entity.*;
 import me.ncexce.manager.exceptions.FileOperationException;
 import me.ncexce.manager.exceptions.ProjectNotFoundException;
 import me.ncexce.manager.pojo.ParsedHashEntry;
-import me.ncexce.manager.pojo.ParsedHashing;
 import me.ncexce.manager.pojo.ParsedUAsset;
 import me.ncexce.manager.repository.*;
 import me.ncexce.manager.utils.UAssetParser;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +43,7 @@ public class UAssetService {
     public void uploadFile(Long projectId, Long userId, MultipartFile file) {
         try {
             // 验证项目存在
-            UAssetProject project = projectRepository.findById(projectId)
+            projectRepository.findById(projectId)
                     .orElseThrow(() -> new ProjectNotFoundException("项目不存在"));
 
             // 获取或创建用户分支的最新commit
@@ -99,7 +96,7 @@ public class UAssetService {
         newCommit.setCommitPath(commitPath);
 
         // 复制当前分支的文件到commit目录
-        copyFilesToCommit(currentCommit, newCommit, commitPath);
+        copyFilesToCommit(currentCommit, commitPath);
 
         return commitRepository.save(newCommit);
     }
@@ -199,7 +196,7 @@ public class UAssetService {
     /**
      * 复制文件到commit目录
      */
-    private void copyFilesToCommit(UAssetCommit sourceCommit, UAssetCommit targetCommit, String commitPath) {
+    private void copyFilesToCommit(UAssetCommit sourceCommit, String commitPath) {
         try {
             Path commitDir = Paths.get(commitPath);
             if (!Files.exists(commitDir)) {
@@ -245,7 +242,7 @@ public class UAssetService {
             // 验证文件属于当前用户分支
             UAssetCommit commit = fileCommit.getCommit();
             if (commit.getUser().getId() != userId || 
-                commit.getProject().getId() != projectId) {
+                !commit.getProject().getId().equals(projectId)) {
                 throw new RuntimeException("无权删除此文件");
             }
 
@@ -321,16 +318,16 @@ public class UAssetService {
                         entryInfo.put("entryChecksum", entry.getEntryChecksum());
                         return entryInfo;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
             metadata.put("hashEntries", hashEntries);
         }
 
         // Names列表（前10个，避免数据过大）
         if (fileCommit.getNames() != null) {
             List<String> names = fileCommit.getNames().stream()
-                    .map((UAssetNameCommit nameCommit) -> nameCommit.getNameValue())
+                    .map(UAssetNameCommit::getNameValue)
                     .limit(10)
-                    .collect(Collectors.toList());
+                    .toList();
             metadata.put("names", names);
             metadata.put("totalNameCount", fileCommit.getNames().size());
         }
