@@ -1,16 +1,15 @@
 package me.ncexce.manager.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
-@Table(name = "uasset_hash_entry")
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UAssetHashEntry {
+@Getter
+@Setter
+@Table(name = "uasset_hash_entry_commit")
+public class UAssetHashEntryCommit {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,6 +18,6 @@ public class UAssetHashEntry {
     private int entryChecksum;
 
     @ManyToOne
-    @JoinColumn(name = "uasset_id")
-    private UAssetFile uasset;
+    @JoinColumn(name = "uasset_file_commit_id")
+    private UAssetFileCommit uassetFileCommit;
 }

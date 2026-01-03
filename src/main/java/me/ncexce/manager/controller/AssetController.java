@@ -1,17 +1,16 @@
 package me.ncexce.manager.controller;
 
-import me.ncexce.manager.service.AssetService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-@RequestMapping("/api/asset")
-public class AssetController {
-    private final AssetService assetService;
+import me.ncexce.manager.service.UAssetService;
 
-    @Autowired
-    public AssetController(AssetService assetService) {
+@RestController
+@RequestMapping("/assets")
+public class AssetController {
+    private final UAssetService assetService;
+
+    public AssetController(UAssetService assetService) {
         this.assetService = assetService;
     }
 }

@@ -8,7 +8,7 @@ public record ParsedUAsset(
         int legacyUE3Version,
         int fileVersionUE4,
         int fileVersionUE5,
-        int licenceeVersion,
+        int licenseeVersion,
         ParsedHashing hashing,
         String assetLocation,
         int nameCount,

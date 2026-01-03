@@ -1,23 +1,22 @@
 package me.ncexce.manager.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Entity
-@Data
-@Table(name = "uasset_file")
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UAssetFile {
+@Getter
+@Setter
+@Table(name = "uasset_file_commit")
+public class UAssetFileCommit {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String fileName;
-
     private String filePath;
 
     private int tag;
@@ -39,12 +38,12 @@ public class UAssetFile {
     private int unkOffset;
 
     @ManyToOne
-    @JoinColumn(name = "version_id")
-    private UAssetVersion version;
+    @JoinColumn(name = "commit_id")
+    private UAssetCommit commit;
 
-    @OneToMany(mappedBy = "uasset")
-    private List<UAssetHashEntry> hashEntries;
+    @OneToMany(mappedBy = "uassetFileCommit", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UAssetHashEntryCommit> hashEntries;
 
-    @OneToMany(mappedBy = "uasset")
-    private List<UAssetName> names;
+    @OneToMany(mappedBy = "uassetFileCommit", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UAssetNameCommit> names;
 }
