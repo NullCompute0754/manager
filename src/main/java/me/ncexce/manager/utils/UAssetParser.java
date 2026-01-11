@@ -7,6 +7,7 @@ import me.ncexce.manager.pojo.ParsedUAsset;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -116,31 +117,48 @@ public class UAssetParser {
 
     private static List<String> readNameMap(RandomAccessFile raf, int offset, int count, ByteOrder endian) throws IOException {
         List<String> names = new ArrayList<>();
+        String name;
         raf.seek(offset);
 
         for (int i = 0; i < count; i++) {
-            String name = readFString(raf, endian);
+            name = readFString(raf, endian);
             names.add(name);
-
-            // Skip NameFlags
-            raf.skipBytes(8);
+            raf.skipBytes(4); // name flags
         }
 
         return names;
     }
 
+    // 更简洁的版本，使用CharsetDecoder
     private static String readFString(RandomAccessFile raf, ByteOrder endian) throws IOException {
         int len = readInt(raf, endian);
+    
         if (len == 0) return "";
-
-        byte[] buf = new byte[len];
-        raf.readFully(buf);
-
-        if (buf[len - 1] == 0) {
+    
+        if (len > 0) {
+            // UTF-8
+            byte[] buf = new byte[len];
+            raf.readFully(buf);
+            // 去掉null终止符
             return new String(buf, 0, len - 1, StandardCharsets.UTF_8);
+        } else {
+            // UTF-16
+            int byteLen = -len;
+            byte[] bytes = new byte[byteLen];
+            raf.readFully(bytes);
+        
+            // 去掉null终止符（最后2个字节）
+            ByteBuffer buffer = ByteBuffer.wrap(bytes, 0, byteLen - 2);
+            buffer.order(endian);
+        
+            // 使用UTF-16解码器
+            Charset charset = endian == ByteOrder.LITTLE_ENDIAN ? 
+                StandardCharsets.UTF_16LE : StandardCharsets.UTF_16BE;
+        
+            return charset.decode(buffer).toString();
         }
-        return new String(buf, StandardCharsets.UTF_8);
     }
+
 
     private static int readInt(RandomAccessFile raf, ByteOrder endian) throws IOException {
         byte[] bytes = new byte[4];
@@ -182,5 +200,11 @@ public class UAssetParser {
     private static class HashingEntry {
         String entryUUID;
         int entryChecksum;
+    }
+
+    public static void movePointer(RandomAccessFile raf, long offset) throws IOException {
+        long newPos = raf.getFilePointer() + offset;
+        if (newPos < 0) newPos = 0;
+        raf.seek(newPos);
     }
 }
