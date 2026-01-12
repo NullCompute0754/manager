@@ -90,7 +90,8 @@ public class UAssetParser {
         metadata.fileVersionUE5 = readInt(raf, endian);
         metadata.licenseeVersion = readInt(raf, endian);
 
-        metadata.hashing.masterUUID=readFString(raf, endian);
+        raf.skipBytes(16);
+        metadata.hashing.masterUUID="FFFFFFFFFFFFFFFF"; //not readFString(raf, endian); //reserved
         metadata.hashing.auxByte1 = readInt(raf, endian);
         metadata.hashing.auxByte2 = readInt(raf, endian);
         metadata.hashing.entryCount = readInt(raf, endian);
@@ -98,7 +99,8 @@ public class UAssetParser {
             metadata.hashing.entries = new HashingEntry[metadata.hashing.entryCount];
             for(int st=0; st<metadata.hashing.entryCount; st++) {
                 metadata.hashing.entries[st] = new HashingEntry();
-                metadata.hashing.entries[st].entryUUID = readFString(raf, endian);
+                raf.skipBytes(16);
+                metadata.hashing.entries[st].entryUUID = "FFFFFFFFFFFFFFFF"; //not readFString(raf, endian); //reserved
                 metadata.hashing.entries[st].entryChecksum = readInt(raf, endian);
             }
         }
@@ -143,7 +145,8 @@ public class UAssetParser {
             return new String(buf, 0, len - 1, StandardCharsets.UTF_8);
         } else {
             // UTF-16
-            int byteLen = -len;
+            int charCount = -len;
+            int byteLen = charCount*2;
             byte[] bytes = new byte[byteLen];
             raf.readFully(bytes);
         

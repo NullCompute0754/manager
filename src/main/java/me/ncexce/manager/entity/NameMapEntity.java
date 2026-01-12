@@ -13,7 +13,7 @@ public class NameMapEntity {
     @Id
     private Long assetId; // 对应 AssetEntity 的 ID
     
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String nameMapJson; // List<String> 序列化
     
     private int entryCount;

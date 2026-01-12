@@ -1,7 +1,6 @@
 package me.ncexce.manager.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import me.ncexce.manager.entity.AssetEntity;
 import me.ncexce.manager.entity.BranchEntity;
@@ -12,6 +11,7 @@ import me.ncexce.manager.repository.BranchRepository;
 import me.ncexce.manager.repository.CommitRepository;
 import me.ncexce.manager.repository.NameMapRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
