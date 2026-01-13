@@ -6,10 +6,12 @@ import me.ncexce.manager.entity.AssetEntity;
 import me.ncexce.manager.entity.BranchEntity;
 import me.ncexce.manager.entity.CommitEntity;
 import me.ncexce.manager.entity.NameMapEntity;
+import me.ncexce.manager.exceptions.InvalidCredentialsException;
 import me.ncexce.manager.repository.AssetRepository;
 import me.ncexce.manager.repository.BranchRepository;
 import me.ncexce.manager.repository.CommitRepository;
 import me.ncexce.manager.repository.NameMapRepository;
+import me.ncexce.manager.utils.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,11 @@ public class MergeService {
 
     @Transactional
     public void mergeToMaster(String userBranchName, String adminMessage) throws Exception {
+
+        if(!SecurityUtils.isBusinessAdmin()) throw new InvalidCredentialsException("Not an administrator");
+
+        String operator = SecurityUtils.getCurrentUsername();
+
         // 1. 获取分支信息
         BranchEntity master = branchRepo.findById("master")
                 .orElseThrow(() -> new RuntimeException("Master branch not found"));
@@ -43,7 +50,7 @@ public class MergeService {
         CommitEntity mergeCommit = new CommitEntity();
         mergeCommit.setId(newCommitId);
         mergeCommit.setParentId(master.getHeadCommitId()); // 关键：变基点
-        mergeCommit.setAuthor("Administrator");
+        mergeCommit.setAuthor(operator);
         mergeCommit.setMessage(adminMessage);
         mergeCommit.setCreatedAt(LocalDateTime.now());
         commitRepo.save(mergeCommit);

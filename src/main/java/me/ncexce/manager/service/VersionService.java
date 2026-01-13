@@ -11,6 +11,7 @@ import me.ncexce.manager.repository.AssetRepository;
 import me.ncexce.manager.repository.BranchRepository;
 import me.ncexce.manager.repository.CommitRepository;
 import me.ncexce.manager.repository.NameMapRepository;
+import me.ncexce.manager.utils.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,8 +31,11 @@ public class VersionService {
 
     @Transactional(rollbackFor = Exception.class)
     public String createCommit(CommitRequest request) throws Exception {
+
+        String operator = SecurityUtils.getCurrentUsername();
+
         // 1. 获取分支
-        BranchEntity branch = branchRepo.findById(request.username())
+        BranchEntity branch = branchRepo.findById(operator)
                 .orElseThrow(() -> new RuntimeException("Branch not found"));
 
         // 2. 创建 Commit
@@ -39,7 +43,7 @@ public class VersionService {
         CommitEntity commit = new CommitEntity();
         commit.setId(commitId);
         commit.setParentId(branch.getHeadCommitId());
-        commit.setAuthor(request.username());
+        commit.setAuthor(operator);
         commit.setMessage(request.message());
         commit.setCreatedAt(LocalDateTime.now());
         commitRepo.save(commit);
@@ -50,7 +54,7 @@ public class VersionService {
             String tempPath = request.paths().get(i);
 
             // 迁移文件
-            String permanentPath = assetService.moveToPermanentStorage(tempPath, request.username());
+            String permanentPath = assetService.moveToPermanentStorage(tempPath, operator);
 
             // 保存 Asset 基础信息
             AssetEntity asset = new AssetEntity();

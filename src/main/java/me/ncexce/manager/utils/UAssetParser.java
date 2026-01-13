@@ -90,8 +90,7 @@ public class UAssetParser {
         metadata.fileVersionUE5 = readInt(raf, endian);
         metadata.licenseeVersion = readInt(raf, endian);
 
-        raf.skipBytes(16);
-        metadata.hashing.masterUUID="FFFFFFFFFFFFFFFF"; //not readFString(raf, endian); //reserved
+        metadata.hashing.masterUUID=readString(raf, 16); //not readFString(raf, endian); //reserved
         metadata.hashing.auxByte1 = readInt(raf, endian);
         metadata.hashing.auxByte2 = readInt(raf, endian);
         metadata.hashing.entryCount = readInt(raf, endian);
@@ -99,8 +98,7 @@ public class UAssetParser {
             metadata.hashing.entries = new HashingEntry[metadata.hashing.entryCount];
             for(int st=0; st<metadata.hashing.entryCount; st++) {
                 metadata.hashing.entries[st] = new HashingEntry();
-                raf.skipBytes(16);
-                metadata.hashing.entries[st].entryUUID = "FFFFFFFFFFFFFFFF"; //not readFString(raf, endian); //reserved
+                metadata.hashing.entries[st].entryUUID = readString(raf, 16); //not readFString(raf, endian); //reserved
                 metadata.hashing.entries[st].entryChecksum = readInt(raf, endian);
             }
         }
@@ -129,6 +127,13 @@ public class UAssetParser {
         }
 
         return names;
+    }
+
+    private static String readString(RandomAccessFile raf, int length) throws IOException {
+        byte[] buf = new byte[length];
+        raf.readFully(buf);
+        String res = ByteUtils.bytesToHex(buf);
+        return res;
     }
 
     // 更简洁的版本，使用CharsetDecoder

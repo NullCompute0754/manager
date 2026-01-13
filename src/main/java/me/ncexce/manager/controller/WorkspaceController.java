@@ -4,14 +4,17 @@ import lombok.RequiredArgsConstructor;
 import me.ncexce.manager.pojo.CommitRequest;
 import me.ncexce.manager.pojo.ParsedUAsset;
 import me.ncexce.manager.service.AssetService;
+import me.ncexce.manager.service.MergeService;
 import me.ncexce.manager.service.VersionService;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/asset")
@@ -19,6 +22,7 @@ import java.io.File;
 public class WorkspaceController {
     private final AssetService assetService;
     private final VersionService versionService;
+    private final MergeService mergeService;
 
     // 返回一个包装类，包含解析结果和临时路径
     public record UploadResponse(ParsedUAsset parsed, String tempPath) {}
@@ -55,4 +59,32 @@ public class WorkspaceController {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
+
+    @PostMapping("/merge")
+    public ResponseEntity<?> mergeToMaster(@RequestBody Map<String, String> payload) {
+        String userBranchName = payload.get("userBranchName");
+        String adminMessage = payload.getOrDefault("adminMessage", "Merged by Administrator");
+
+        if (userBranchName == null || userBranchName.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Target branch name is required"));
+        }
+
+        try {
+            // Service 内部会通过 SecurityUtils 自动校验 Administrator 权限
+            mergeService.mergeToMaster(userBranchName, adminMessage);
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "Successfully merged [" + userBranchName + "] to master"
+            ));
+        } catch (me.ncexce.manager.exceptions.InvalidCredentialsException e) {
+            // 权限不足返回 403
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            // 其他错误返回 500
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Merge failed: " + e.getMessage()));
+        }
+    }
+
 }
