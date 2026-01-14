@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -34,7 +33,7 @@ public class JwtAuthenticateFilter extends OncePerRequestFilter {
                 Claims claims = jwtService.validateToken(token);
 
                 String username = claims.getSubject();
-//                String role = claims.get("role", String.class);   //for furthur use possibility
+                String role = claims.get("role", String.class);   //for furthur use possibility
                 String securityRole = claims.get("securityRole", String.class);
 
                 UsernamePasswordAuthenticationToken authentication =
@@ -43,7 +42,7 @@ public class JwtAuthenticateFilter extends OncePerRequestFilter {
                                 null,
                                 Collections.singleton(() -> "ROLE_" + securityRole)
                         );
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                authentication.setDetails(role);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
