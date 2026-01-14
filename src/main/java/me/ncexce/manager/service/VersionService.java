@@ -5,6 +5,8 @@ import me.ncexce.manager.entity.AssetEntity;
 import me.ncexce.manager.entity.BranchEntity;
 import me.ncexce.manager.entity.CommitEntity;
 import me.ncexce.manager.entity.NameMapEntity;
+import me.ncexce.manager.exceptions.InvalidCredentialsException;
+import me.ncexce.manager.pojo.CommitHistoryItem;
 import me.ncexce.manager.pojo.CommitRequest;
 import me.ncexce.manager.pojo.ParsedUAsset;
 import me.ncexce.manager.repository.AssetRepository;
@@ -17,6 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -86,5 +91,45 @@ public class VersionService {
         branchRepo.save(branch);
 
         return commitId;
+    }
+
+    public List<CommitHistoryItem> getBranchHistory(String branchName) {
+        branchRepo.findById(branchName)
+                .orElseThrow(() -> new RuntimeException("Branch not found"));
+
+        CommitEntity com;
+        List<CommitHistoryItem> commitHistoryItems = new ArrayList<>();
+
+        for (CommitEntity commit : commitRepo.findByAuthorOrderByCreatedAtDesc(branchName)) {
+            com = commit;
+            commitHistoryItems.add(new CommitHistoryItem(
+                    com.getId(),
+                    com.getMessage(),
+                    com.getCreatedAt().toString(),
+                    com.getAuthor()
+            ));
+        }
+        return commitHistoryItems;
+    }
+
+    public String setCurBranchHeadByShortHash(String branchName, String shortHash) {
+
+        //if user access different branch, and also he's not admin, kick out
+        if(!Objects.equals(branchName, SecurityUtils.getCurrentUsername()) && !SecurityUtils.isBusinessAdmin()){
+            throw new InvalidCredentialsException("Permission denied");
+        }
+
+        BranchEntity branch = branchRepo.findById(branchName)
+                .orElseThrow(() -> new IllegalArgumentException("Branch not found")); //likely impossible
+
+        List<CommitEntity> commits = commitRepo.findByAuthorAndIdStartingWith(branchName, shortHash);
+        if (commits.size() != 1) {
+            throw new IllegalArgumentException("Not Unique Short Hash");
+        }
+
+        branch.setHeadCommitId(commits.getFirst().getId());
+        branchRepo.save(branch);
+
+        return branch.getHeadCommitId();
     }
 }

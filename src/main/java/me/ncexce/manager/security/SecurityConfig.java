@@ -55,10 +55,10 @@ public class SecurityConfig {
     }
 
     private String[] getPublicEndpoints() {
-        return new String[] {"/api/auth/login", "/api/auth/register", "/test", "/api/asset/upload", "/api/asset/commit"};
+        return new String[] {"/api/auth/login", "/api/auth/register", "/test"};
     }
 
     private String[] getPrivateEndpoints() {
-        return new String[] {};
+        return new String[] {"/api/asset/**"};
     }
 }

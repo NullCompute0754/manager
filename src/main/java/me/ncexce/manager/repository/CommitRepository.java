@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface CommitRepository extends JpaRepository<CommitEntity, String> {
     List<CommitEntity> findByAuthorOrderByCreatedAtDesc(String author);
+    List<CommitEntity> findByAuthorAndIdStartingWith(String author, String idPrefix);
 }

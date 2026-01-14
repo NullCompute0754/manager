@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import me.ncexce.manager.entity.BranchEntity;
 import me.ncexce.manager.exceptions.UserExistsException;
+import me.ncexce.manager.pojo.CommitHistoryItem;
 import me.ncexce.manager.pojo.dto.RegisterRequestDTO;
 import me.ncexce.manager.pojo.dto.RegisterResponseDTO;
 import me.ncexce.manager.repository.BranchRepository;
@@ -81,4 +82,5 @@ public class AuthService {
 
         return new RegisterResponseDTO(user.getUsername(), 200, "User registered successfully");
     }
+
 }

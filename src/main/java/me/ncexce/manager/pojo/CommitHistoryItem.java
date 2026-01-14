@@ -4,5 +4,5 @@ public record CommitHistoryItem(
         String commitId,
         String message,
         String createdAt,
-        String assetName
+        String author
 ) {}

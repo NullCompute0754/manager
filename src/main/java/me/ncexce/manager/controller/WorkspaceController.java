@@ -1,6 +1,7 @@
 package me.ncexce.manager.controller;
 
 import lombok.RequiredArgsConstructor;
+import me.ncexce.manager.pojo.CommitHistoryItem;
 import me.ncexce.manager.pojo.CommitRequest;
 import me.ncexce.manager.pojo.ParsedUAsset;
 import me.ncexce.manager.service.AssetService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,6 +28,9 @@ public class WorkspaceController {
 
     // 返回一个包装类，包含解析结果和临时路径
     public record UploadResponse(ParsedUAsset parsed, String tempPath) {}
+    
+    // commit接口的响应包装类
+    public record CommitResponse(String commitId) {}
 
     @PostMapping("/upload")
     public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
@@ -54,7 +59,16 @@ public class WorkspaceController {
         // Request 包含消息、用户名及已上传文件的路径
         try {
             String commitId = versionService.createCommit(request);
-            return ResponseEntity.ok(commitId);
+            
+            // 创建响应对象
+            CommitResponse response = new CommitResponse(commitId);
+            
+            // 使用assetService的toJson方法将响应对象序列化为JSON字符串
+            String jsonResponse = assetService.toJson(response);
+            
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body(jsonResponse);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
@@ -85,6 +99,21 @@ public class WorkspaceController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Merge failed: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/{branchName}/history")
+    public List<CommitHistoryItem> getBranchHistory(
+            @PathVariable String branchName) {
+
+        return versionService.getBranchHistory(branchName);
+    }
+
+    @PostMapping("/sethead")
+    public ResponseEntity<String> setCurBranchHeadByShortHash(
+            @RequestParam String branchName,
+            @RequestParam String shortHash) {
+
+        return ResponseEntity.ok(versionService.setCurBranchHeadByShortHash(branchName, shortHash));
     }
 
 }
