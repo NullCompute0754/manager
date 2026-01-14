@@ -1,10 +1,14 @@
 package me.ncexce.manager.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
+import me.ncexce.manager.entity.BranchEntity;
 import me.ncexce.manager.exceptions.UserExistsException;
+import me.ncexce.manager.pojo.CommitHistoryItem;
 import me.ncexce.manager.pojo.dto.RegisterRequestDTO;
 import me.ncexce.manager.pojo.dto.RegisterResponseDTO;
+import me.ncexce.manager.repository.BranchRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,16 +21,19 @@ import me.ncexce.manager.repository.UserRepository;
 import me.ncexce.manager.security.JwtService;
 import me.ncexce.manager.exceptions.UserNotFoundException;
 import me.ncexce.manager.exceptions.InvalidCredentialsException;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
     private final UserRepository userRepository;
+    private final BranchRepository branchRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     @Autowired
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(UserRepository userRepository, BranchRepository branchRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
+        this.branchRepository = branchRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -53,9 +60,11 @@ public class AuthService {
         return response;
     }
 
+    @Transactional
     public RegisterResponseDTO register(RegisterRequestDTO request) {
         if (userRepository.existsByUsername(request.getUsername())) throw new UserExistsException("The username exists");
         UserEntity user = new UserEntity();
+        BranchEntity branch = new BranchEntity();
 
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -64,6 +73,14 @@ public class AuthService {
 
         userRepository.save(user);
 
+        branch.setName(request.getUsername());
+        branch.setUpdatedAt(LocalDateTime.now());
+        branch.setMaster(false);
+        branch.setHeadCommitId(null);
+
+        branchRepository.save(branch);
+
         return new RegisterResponseDTO(user.getUsername(), 200, "User registered successfully");
     }
+
 }

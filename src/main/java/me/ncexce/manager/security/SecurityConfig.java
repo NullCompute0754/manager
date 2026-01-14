@@ -59,6 +59,6 @@ public class SecurityConfig {
     }
 
     private String[] getPrivateEndpoints() {
-        return new String[] {"/api/asset"};
+        return new String[] {"/api/asset/**"};
     }
 }
